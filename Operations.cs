@@ -13,12 +13,23 @@ namespace Coding_Challenge_1
         /// </summary>
         /// <param name="inputs"> Operações enviadas pelo utilizador </param>
         /// <returns></returns>
-        public static string Process(string[] inputs)
+        public static string Process(List<string> inputs)
         {
-            int[] resultQueue = new int[1];
+            List<int> resultQueue = new List<int>();
+            bool successfullOperation;
 
+            for (int cont = 0; cont < inputs.Count; cont++)
+            {
+                switch (inputs[cont])
+                {
+                    case "PUSH": 
+                        successfullOperation = Push(resultQueue, inputs[cont + 1]);
+                        cont = successfullOperation ? cont + 1 : cont;
+                        break;
+                }
+            }
 
-            return resultQueue.ToString();
+            return String.Join(' ', resultQueue);
         }
 
         /// <summary>
@@ -26,9 +37,18 @@ namespace Coding_Challenge_1
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
         /// <param name="value"> Valor a adicionar à lista </param>
-        private static void Push(int[] resultQueue, string value)
+        private static bool Push(List<int> resultQueue, string value)
         {
-            
+            int treatedValue;
+
+            bool success = int.TryParse(value, out treatedValue);
+
+            if (success)
+            {
+                resultQueue.Add(treatedValue);
+            }
+
+            return success;
         }
 
         /// <summary>
