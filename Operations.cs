@@ -23,8 +23,20 @@ namespace Coding_Challenge_1
                 switch (inputs[cont])
                 {
                     case "PUSH": 
+                        if (cont == inputs.Count - 1)
+                        {
+                            return "Operação PUSH não pode ser a ultima operação";
+                        }
+
                         successfullOperation = Push(resultQueue, inputs[cont + 1]);
-                        cont = successfullOperation ? cont + 1 : cont;
+                        
+                        if (!successfullOperation)
+                        {
+                            return "Operação PUSH tem de ser seguida por um número";
+                        }
+
+                        cont++;
+
                         break;
                 }
             }
