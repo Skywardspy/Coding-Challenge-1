@@ -8,17 +8,48 @@ namespace Coding_Challenge_1
 {
     internal class Operations
     {
+        private static double accumulator = 0;
+
         /// <summary>
         /// Função que trata e processa os inputs
         /// </summary>
         /// <param name="inputs"> Operações enviadas pelo utilizador </param>
         /// <returns></returns>
-        public static string Process(string[] inputs)
+        public static double Process(List<string> inputs)
         {
-            int[] resultQueue = new int[1];
+            List<double> resultQueue = new List<double>();
+            bool successfullOperation;
 
+            for (int cont = 0; cont < inputs.Count; cont++)
+            {
+                switch (inputs[cont])
+                {
+                    case "PUSH": 
+                        if (cont == inputs.Count - 1)
+                        {
+                            throw new Exception("Operação PUSH não pode ser a ultima operação");
+                        }
 
-            return resultQueue.ToString();
+                        successfullOperation = Push(resultQueue, inputs[cont + 1]);
+                        
+                        if (!successfullOperation)
+                        {
+                            throw new Exception("Operação PUSH tem de ser seguida por um número");
+                        }
+
+                        cont++;
+
+                        break;
+
+                    case "ADD":
+
+                        Add(resultQueue);
+
+                        break;
+                }
+            }
+
+            return accumulator;
         }
 
         /// <summary>
@@ -26,18 +57,43 @@ namespace Coding_Challenge_1
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
         /// <param name="value"> Valor a adicionar à lista </param>
-        private static void Push(int[] resultQueue, string value)
+        private static bool Push(List<double> resultQueue, string value)
         {
-            
+            double treatedValue;
+
+            bool success = double.TryParse(value, out treatedValue);
+
+            if (success)
+            {
+                resultQueue.Add(treatedValue);
+            }
+
+            // Guarda o valor adicionado no acumulador
+            accumulator = treatedValue;
+
+            return success;
         }
 
         /// <summary>
         /// Operação ADD - soma os dois ultimos valores da lista 
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Add(int[] resultQueue)
+        private static void Add(List<double> resultQueue)
         {
-            
+            double addResult;
+            int resultLastIndex = resultQueue.Count - 1;
+
+            // Soma os ultimos valores da lista
+            addResult = resultQueue[resultLastIndex] + resultQueue[resultLastIndex - 1];
+
+            // Remove os valores usados na soma
+            resultQueue.RemoveRange(resultLastIndex - 1, 2);
+
+            // Adiciona o valor da soma ao final da lista
+            resultQueue.Add(addResult);
+
+            // Guarda o valor da soma no acumulador
+            accumulator = addResult;
         }
 
         /// <summary>
@@ -93,7 +149,6 @@ namespace Coding_Challenge_1
         {
             
         }
-
     }
 
 }

@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            string[] treatedInput;
+            List<string> treatedInput;
 
             // Valida se o programa foi iniciado com ou sem parametros de entrada
             if (args.Length == 0)
@@ -14,15 +14,25 @@
                 Console.WriteLine("Insira a string de operações");
                 userInput = Console.ReadLine();
 
-                treatedInput = userInput.Split(' ');
+                treatedInput = userInput.Split(' ').ToList();
             } 
             else
             {
-                treatedInput = args;
+                treatedInput = args.ToList();
             }
 
-            // Processa as operações
-            Operations.Process(treatedInput);
+            try
+            {
+                // Processa as operações
+                double result = Operations.Process(treatedInput);
+
+                Console.WriteLine(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+           
         }
         
     }
