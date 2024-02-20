@@ -41,6 +41,10 @@ namespace Coding_Challenge_1
                     case "SUB":
                         accumulator = Subtract(resultQueue);
                         break;
+
+                    case "MUL":
+                        accumulator = Multiply(resultQueue);
+                        break;
                 }
             }
 
@@ -130,9 +134,28 @@ namespace Coding_Challenge_1
         /// Operação MUL - multiplica os dois ultimos valores da lista
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Multiply(int[] resultQueue)
+        private static double Multiply(List<double> resultQueue)
         {
-            
+            double mulResult;
+            int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
+
+            // Valida se a lista tem 2 ou mais números para poder fazer a multiplicação
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação MUL requer dois ou mais números na fila");
+            }
+
+            // Multiplica os ultimos valores da lista
+            mulResult = resultQueue[resultLastIndex] * resultQueue[resultLastIndex - 1];
+
+            // Remove os valores usados na multiplicação
+            resultQueue.RemoveRange(resultLastIndex - 1, 2);
+
+            // Adiciona o valor da multiplicação ao final da lista
+            resultQueue.Add(mulResult);
+
+            // Guarda o valor da multiplicação no acumulador
+            return mulResult;
         }
 
         /// <summary>
