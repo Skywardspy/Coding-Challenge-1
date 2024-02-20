@@ -49,6 +49,21 @@ namespace Coding_Challenge_1
                     case "DIV":
                         accumulator = Divide(resultQueue);
                         break;
+
+                    case "DUP":
+                        Duplicate(resultQueue);
+                        break;
+
+                    case "POP":
+                        Pop(resultQueue);
+                        break;
+
+                    case "SWAP":
+                        Swap(resultQueue);
+                        break;
+
+                    default:
+                        throw new Exception($"{inputs[cont]} não é uma operação válida");
                 }
             }
 
@@ -194,27 +209,55 @@ namespace Coding_Challenge_1
         /// Operação DUP - duplica o ultimo valor da lista
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Duplicate(int[] resultQueue)
+        private static void Duplicate(List<double> resultQueue)
         {
-            
+            // Valida se a lista tem 1 ou mais números
+            if (resultQueue.Count < 1)
+            {
+                throw new Exception("Operação DUP requer pelo menos um número na fila");
+            }
+
+            // Adiciona ao final da lista o último valor da lista
+            resultQueue.Add(resultQueue.Last());
         }
 
         /// <summary>
         /// Operação POP - remove o ultimo valor da lista
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Pop(int[] resultQueue)
+        private static void Pop(List<double> resultQueue)
         {
-            
+            // Valida se a lista tem 1 ou mais números
+            if (resultQueue.Count < 1)
+            {
+                throw new Exception("Operação POP requer pelo menos um número na fila");
+            }
+
+            // Remove o último valor da lista
+            resultQueue.RemoveAt(resultQueue.Count - 1);
         }
 
         /// <summary>
         /// Operação SWAP - inverte a posição dos dois últimos valores da lista
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Swap(int[] resultQueue)
+        private static void Swap(List<double> resultQueue)
         {
-            
+            double aux = 0;
+            int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
+
+            // Valida se a lista tem 2 ou mais números para poder realizar a inversão
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação SWAP requer dois ou mais números na fila");
+            }
+
+            // Guarda o último valor da lista numa variável auxiliar
+            aux = resultQueue.Last();
+
+            // Insere o penúltimo valor no último lugar e depois insere o valor auxiliar no penúltimo lugar
+            resultQueue[resultLastIndex] = resultQueue[resultLastIndex - 1];
+            resultQueue[resultLastIndex - 1] = aux;
         }
     }
 
