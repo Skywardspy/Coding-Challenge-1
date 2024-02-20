@@ -23,7 +23,7 @@
             try
             {
                 // Processa as operações
-                string result = Operations.Process(treatedInput);
+                double result = Operations.Process(treatedInput);
 
                 Console.WriteLine(result);
             }

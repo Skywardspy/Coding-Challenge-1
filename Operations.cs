@@ -8,14 +8,17 @@ namespace Coding_Challenge_1
 {
     internal class Operations
     {
+        
+
         /// <summary>
         /// Função que trata e processa os inputs
         /// </summary>
         /// <param name="inputs"> Operações enviadas pelo utilizador </param>
-        /// <returns></returns>
-        public static string Process(List<string> inputs)
+        /// <returns> Devolve o acumulador final </returns>
+        public static double Process(List<string> inputs)
         {
-            List<int> resultQueue = new List<int>();
+            double accumulator = 0;
+            List<double> resultQueue = new List<double>();
             bool successfullOperation;
 
             for (int cont = 0; cont < inputs.Count; cont++)
@@ -25,23 +28,21 @@ namespace Coding_Challenge_1
                     case "PUSH": 
                         if (cont == inputs.Count - 1)
                         {
-                            return "Operação PUSH não pode ser a ultima operação";
+                            throw new Exception("Operação PUSH não pode ser a ultima operação");
                         }
-
-                        successfullOperation = Push(resultQueue, inputs[cont + 1]);
-                        
-                        if (!successfullOperation)
-                        {
-                            return "Operação PUSH tem de ser seguida por um número";
-                        }
-
+                        Push(resultQueue, inputs[cont+1]);
                         cont++;
+                        break;
+
+                    case "ADD":
+
+                        accumulator = Add(resultQueue);
 
                         break;
                 }
             }
 
-            return String.Join(' ', resultQueue);
+            return accumulator;
         }
 
         /// <summary>
@@ -49,27 +50,50 @@ namespace Coding_Challenge_1
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
         /// <param name="value"> Valor a adicionar à lista </param>
-        private static bool Push(List<int> resultQueue, string value)
+        /// <returns> Devolve o acumulador </returns>
+        private static double Push(List<double> resultQueue, string value)
         {
-            int treatedValue;
+            double treatedValue;
 
-            bool success = int.TryParse(value, out treatedValue);
-
-            if (success)
+            // Tenta converter a string enviada para um double e caso não consiga atira uma exceção
+            if (!double.TryParse(value, out treatedValue))
             {
-                resultQueue.Add(treatedValue);
+                throw new Exception("Operação PUSH tem de ser seguida por um número");
             }
 
-            return success;
+            resultQueue.Add(treatedValue);
+            
+            // Guarda o valor adicionado no acumulador
+            return treatedValue;
         }
 
         /// <summary>
         /// Operação ADD - soma os dois ultimos valores da lista 
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Add(int[] resultQueue)
+        /// <returns> Devolve o valor do acumulador </returns>
+        private static double Add(List<double> resultQueue)
         {
-            
+            double addResult;
+            int resultLastIndex = resultQueue.Count - 1;
+
+            // Valida se a lista tem 2 ou mais números para poder fazer a soma
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação ADD requer dois ou mais números na fila");
+            }
+
+            // Soma os ultimos valores da lista
+            addResult = resultQueue[resultLastIndex] + resultQueue[resultLastIndex - 1];
+
+            // Remove os valores usados na soma
+            resultQueue.RemoveRange(resultLastIndex - 1, 2);
+
+            // Adiciona o valor da soma ao final da lista
+            resultQueue.Add(addResult);
+
+            // Guarda o valor da soma no acumulador
+            return addResult;
         }
 
         /// <summary>
@@ -125,7 +149,6 @@ namespace Coding_Challenge_1
         {
             
         }
-
     }
 
 }
