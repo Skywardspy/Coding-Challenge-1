@@ -8,15 +8,16 @@ namespace Coding_Challenge_1
 {
     internal class Operations
     {
-        private static double accumulator = 0;
+        
 
         /// <summary>
         /// Função que trata e processa os inputs
         /// </summary>
         /// <param name="inputs"> Operações enviadas pelo utilizador </param>
-        /// <returns></returns>
+        /// <returns> Devolve o acumulador final </returns>
         public static double Process(List<string> inputs)
         {
+            double accumulator = 0;
             List<double> resultQueue = new List<double>();
             bool successfullOperation;
 
@@ -29,21 +30,13 @@ namespace Coding_Challenge_1
                         {
                             throw new Exception("Operação PUSH não pode ser a ultima operação");
                         }
-
-                        successfullOperation = Push(resultQueue, inputs[cont + 1]);
-                        
-                        if (!successfullOperation)
-                        {
-                            throw new Exception("Operação PUSH tem de ser seguida por um número");
-                        }
-
+                        Push(resultQueue, inputs[cont+1]);
                         cont++;
-
                         break;
 
                     case "ADD":
 
-                        Add(resultQueue);
+                        accumulator = Add(resultQueue);
 
                         break;
                 }
@@ -57,31 +50,38 @@ namespace Coding_Challenge_1
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
         /// <param name="value"> Valor a adicionar à lista </param>
-        private static bool Push(List<double> resultQueue, string value)
+        /// <returns> Devolve o acumulador </returns>
+        private static double Push(List<double> resultQueue, string value)
         {
             double treatedValue;
 
-            bool success = double.TryParse(value, out treatedValue);
-
-            if (success)
+            // Tenta converter a string enviada para um double e caso não consiga atira uma exceção
+            if (!double.TryParse(value, out treatedValue))
             {
-                resultQueue.Add(treatedValue);
+                throw new Exception("Operação PUSH tem de ser seguida por um número");
             }
 
+            resultQueue.Add(treatedValue);
+            
             // Guarda o valor adicionado no acumulador
-            accumulator = treatedValue;
-
-            return success;
+            return treatedValue;
         }
 
         /// <summary>
         /// Operação ADD - soma os dois ultimos valores da lista 
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Add(List<double> resultQueue)
+        /// <returns> Devolve o valor do acumulador </returns>
+        private static double Add(List<double> resultQueue)
         {
             double addResult;
             int resultLastIndex = resultQueue.Count - 1;
+
+            // Valida se a lista tem 2 ou mais números para poder fazer a soma
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação ADD requer dois ou mais números na fila");
+            }
 
             // Soma os ultimos valores da lista
             addResult = resultQueue[resultLastIndex] + resultQueue[resultLastIndex - 1];
@@ -93,7 +93,7 @@ namespace Coding_Challenge_1
             resultQueue.Add(addResult);
 
             // Guarda o valor da soma no acumulador
-            accumulator = addResult;
+            return addResult;
         }
 
         /// <summary>
