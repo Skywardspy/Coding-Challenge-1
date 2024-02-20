@@ -30,7 +30,7 @@ namespace Coding_Challenge_1
                         {
                             throw new Exception("Operação PUSH não pode ser a ultima operação");
                         }
-                        Push(resultQueue, inputs[cont+1]);
+                        accumulator = Push(resultQueue, inputs[cont+1]);
                         cont++;
                         break;
 
@@ -44,6 +44,10 @@ namespace Coding_Challenge_1
 
                     case "MUL":
                         accumulator = Multiply(resultQueue);
+                        break;
+
+                    case "DIV":
+                        accumulator = Divide(resultQueue);
                         break;
                 }
             }
@@ -103,7 +107,7 @@ namespace Coding_Challenge_1
         }
 
         /// <summary>
-        /// Operação SUB - subtrai os dois ultimos valores da lista
+        /// Operação SUB - subtrai os dois ultimos valores da lista (a começar pelo último valor)
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
         private static double Subtract(List<double> resultQueue)
@@ -159,12 +163,31 @@ namespace Coding_Challenge_1
         }
 
         /// <summary>
-        /// Operação DIV - divide os dois ultimos valores da lista
+        /// Operação DIV - divide os dois ultimos valores da lista (a começar pelo último valor)
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Divide(int[] resultQueue)
+        private static double Divide(List<double> resultQueue)
         {
-            
+            double divResult;
+            int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
+
+            // Valida se a lista tem 2 ou mais números para poder fazer a divisão
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação MUL requer dois ou mais números na fila");
+            }
+
+            // Divide os ultimos valores da lista
+            divResult = resultQueue[resultLastIndex] / resultQueue[resultLastIndex - 1];
+
+            // Remove os valores usados na divisão
+            resultQueue.RemoveRange(resultLastIndex - 1, 2);
+
+            // Adiciona o valor da divisão ao final da lista
+            resultQueue.Add(divResult);
+
+            // Guarda o valor da divisão no acumulador
+            return divResult;
         }
 
         /// <summary>
