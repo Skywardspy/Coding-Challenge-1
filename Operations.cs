@@ -35,9 +35,11 @@ namespace Coding_Challenge_1
                         break;
 
                     case "ADD":
-
                         accumulator = Add(resultQueue);
+                        break;
 
+                    case "SUB":
+                        accumulator = Subtract(resultQueue);
                         break;
                 }
             }
@@ -75,7 +77,7 @@ namespace Coding_Challenge_1
         private static double Add(List<double> resultQueue)
         {
             double addResult;
-            int resultLastIndex = resultQueue.Count - 1;
+            int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
 
             // Valida se a lista tem 2 ou mais números para poder fazer a soma
             if (resultQueue.Count < 2)
@@ -100,9 +102,28 @@ namespace Coding_Challenge_1
         /// Operação SUB - subtrai os dois ultimos valores da lista
         /// </summary>
         /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Subtract(int[] resultQueue)
+        private static double Subtract(List<double> resultQueue)
         {
-            
+            double subResult;
+            int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
+
+            // Valida se a lista tem 2 ou mais números para poder fazer a subtração
+            if (resultQueue.Count < 2)
+            {
+                throw new Exception("Operação SUB requer dois ou mais números na fila");
+            }
+
+            // Subtrai os ultimos valores da lista
+            subResult = resultQueue[resultLastIndex] - resultQueue[resultLastIndex - 1];
+
+            // Remove os valores usados na subtração
+            resultQueue.RemoveRange(resultLastIndex - 1, 2);
+
+            // Adiciona o valor da subtração ao final da lista
+            resultQueue.Add(subResult);
+
+            // Guarda o valor da subtração no acumulador
+            return subResult;
         }
 
         /// <summary>
