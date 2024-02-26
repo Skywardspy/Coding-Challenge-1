@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace Coding_Challenge_1
 {
-    internal class Operations
+    public class Operations
     {
-        
+        public static List<Log> logList = new List<Log>();
+        private static double _accumulator = 0;
+        public static List<double> resultQueue = new List<double>();
 
         /// <summary>
         /// Função que trata e processa os inputs
@@ -17,8 +19,10 @@ namespace Coding_Challenge_1
         /// <returns> Devolve o acumulador final </returns>
         public static double Process(List<string> inputs)
         {
-            double accumulator = 0;
-            List<double> resultQueue = new List<double>();
+            logList.Clear();
+            resultQueue.Clear();
+            _accumulator = 0;
+            
             bool successfullOperation;
 
             for (int cont = 0; cont < inputs.Count; cont++)
@@ -28,66 +32,80 @@ namespace Coding_Challenge_1
                     case "PUSH": 
                         if (cont == inputs.Count - 1)
                         {
-                            throw new Exception("Operação PUSH não pode ser a ultima operação");
+                            string error = "Operação PUSH tem de ser seguida por um número";
+                            logList.Add(new Log("PUSH", LogType.Warning, error, _accumulator));
+                            break;
                         }
-                        accumulator = Push(resultQueue, inputs[cont+1]);
-                        cont++;
-                        break;
+                        double? aux = Push(inputs[cont+1]);
 
+                        // No caso do PUSH é preciso validar se o PUSH foi feito com sucesso para saber se o contador salta um digito para a frente (para saltar o index do número)
+                        if (aux.HasValue)
+                        {
+                            _accumulator = aux.Value;
+                            cont++;
+                        }
+                        
+                        break;
+                    // Caso haja erro é devolvido um null e o ternário garante que o acumulador mantém o seu valor (Aplica-se a todas as operações que alteram o acumulador)
                     case "ADD":
-                        accumulator = Add(resultQueue);
+                        _accumulator = Add() ?? _accumulator;
                         break;
 
                     case "SUB":
-                        accumulator = Subtract(resultQueue);
+                        _accumulator = Subtract() ?? _accumulator;
                         break;
 
                     case "MUL":
-                        accumulator = Multiply(resultQueue);
+                        _accumulator = Multiply() ?? _accumulator;
                         break;
 
                     case "DIV":
-                        accumulator = Divide(resultQueue);
+                        _accumulator = Divide() ?? _accumulator;
                         break;
 
                     case "DUP":
-                        Duplicate(resultQueue);
+                        _accumulator = Duplicate() ?? _accumulator;
                         break;
 
                     case "POP":
-                        Pop(resultQueue);
+                        Pop();
                         break;
 
                     case "SWAP":
-                        Swap(resultQueue);
+                        Swap();
                         break;
 
                     default:
-                        throw new Exception($"{inputs[cont]} não é uma operação válida");
+                        // Adiciona o erro à lista de logs
+                        logList.Add(new Log($"{inputs[cont]}", LogType.Error, "Não é uma operação válida", _accumulator));
+                        break;
                 }
             }
 
-            return accumulator;
+            return _accumulator;
         }
 
         /// <summary>
         /// Operação PUSH - adiciona o valor recebido ao final da lista de resultados
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
         /// <param name="value"> Valor a adicionar à lista </param>
         /// <returns> Devolve o acumulador </returns>
-        private static double Push(List<double> resultQueue, string value)
+        private static double? Push(string value)
         {
             double treatedValue;
 
             // Tenta converter a string enviada para um double e caso não consiga atira uma exceção
             if (!double.TryParse(value, out treatedValue))
             {
-                throw new Exception("Operação PUSH tem de ser seguida por um número");
+                string error = "Operação PUSH tem de ser seguida por um número";
+                logList.Add(new Log($"PUSH {value}", LogType.Warning, error, _accumulator));
+                return null;
             }
 
             resultQueue.Add(treatedValue);
-            
+
+            logList.Add(new Log($"PUSH {value}", LogType.Regular, null, null, String.Join(' ', resultQueue), treatedValue));
+
             // Guarda o valor adicionado no acumulador
             return treatedValue;
         }
@@ -95,9 +113,8 @@ namespace Coding_Challenge_1
         /// <summary>
         /// Operação ADD - soma os dois ultimos valores da lista 
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
         /// <returns> Devolve o valor do acumulador </returns>
-        private static double Add(List<double> resultQueue)
+        private static double? Add()
         {
             double addResult;
             int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
@@ -105,17 +122,24 @@ namespace Coding_Challenge_1
             // Valida se a lista tem 2 ou mais números para poder fazer a soma
             if (resultQueue.Count < 2)
             {
-                throw new Exception("Operação ADD requer dois ou mais números na fila");
+                string error = "Operação ADD requer dois ou mais números na fila";
+                logList.Add(new Log("ADD", LogType.Warning, error, _accumulator));
+                return null;
             }
 
             // Soma os ultimos valores da lista
             addResult = resultQueue[resultLastIndex] + resultQueue[resultLastIndex - 1];
 
+            // Guarda a descrição do processo da operação para efeitos de log
+            string logOp = $"{resultQueue[resultLastIndex]} + {resultQueue[resultLastIndex - 1]} = {addResult}";
+            
             // Remove os valores usados na soma
             resultQueue.RemoveRange(resultLastIndex - 1, 2);
 
             // Adiciona o valor da soma ao final da lista
             resultQueue.Add(addResult);
+
+            logList.Add(new Log("ADD", LogType.Regular, null, logOp, String.Join(' ', resultQueue), addResult));
 
             // Guarda o valor da soma no acumulador
             return addResult;
@@ -124,8 +148,7 @@ namespace Coding_Challenge_1
         /// <summary>
         /// Operação SUB - subtrai os dois ultimos valores da lista (a começar pelo último valor)
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static double Subtract(List<double> resultQueue)
+        private static double? Subtract()
         {
             double subResult;
             int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
@@ -133,17 +156,24 @@ namespace Coding_Challenge_1
             // Valida se a lista tem 2 ou mais números para poder fazer a subtração
             if (resultQueue.Count < 2)
             {
-                throw new Exception("Operação SUB requer dois ou mais números na fila");
+                string error = "Operação SUB requer dois ou mais números na fila";
+                logList.Add(new Log("SUB", LogType.Warning, error, _accumulator));
+                return null;
             }
 
             // Subtrai os ultimos valores da lista
             subResult = resultQueue[resultLastIndex] - resultQueue[resultLastIndex - 1];
 
+            // Guarda a descrição do processo da operação para efeitos de log
+            string logOp = $"{resultQueue[resultLastIndex]} - {resultQueue[resultLastIndex - 1]} = {subResult}";
+            
             // Remove os valores usados na subtração
             resultQueue.RemoveRange(resultLastIndex - 1, 2);
 
             // Adiciona o valor da subtração ao final da lista
             resultQueue.Add(subResult);
+
+            logList.Add(new Log("SUB", LogType.Regular, null, logOp, String.Join(' ', resultQueue), subResult));
 
             // Guarda o valor da subtração no acumulador
             return subResult;
@@ -152,8 +182,7 @@ namespace Coding_Challenge_1
         /// <summary>
         /// Operação MUL - multiplica os dois ultimos valores da lista
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static double Multiply(List<double> resultQueue)
+        private static double? Multiply()
         {
             double mulResult;
             int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
@@ -161,17 +190,24 @@ namespace Coding_Challenge_1
             // Valida se a lista tem 2 ou mais números para poder fazer a multiplicação
             if (resultQueue.Count < 2)
             {
-                throw new Exception("Operação MUL requer dois ou mais números na fila");
+                string error = "Operação MUL requer dois ou mais números na fila";
+                logList.Add(new Log("MUL", LogType.Warning, error, _accumulator));
+                return null;
             }
 
             // Multiplica os ultimos valores da lista
             mulResult = resultQueue[resultLastIndex] * resultQueue[resultLastIndex - 1];
+
+            // Guarda a descrição do processo da operação para efeitos de log
+            string logOp = $"{resultQueue[resultLastIndex]} * {resultQueue[resultLastIndex - 1]} = {mulResult}";
 
             // Remove os valores usados na multiplicação
             resultQueue.RemoveRange(resultLastIndex - 1, 2);
 
             // Adiciona o valor da multiplicação ao final da lista
             resultQueue.Add(mulResult);
+
+            logList.Add(new Log("MUL", LogType.Regular, null, logOp, String.Join(' ', resultQueue), mulResult));
 
             // Guarda o valor da multiplicação no acumulador
             return mulResult;
@@ -180,8 +216,7 @@ namespace Coding_Challenge_1
         /// <summary>
         /// Operação DIV - divide os dois ultimos valores da lista (a começar pelo último valor)
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static double Divide(List<double> resultQueue)
+        private static double? Divide()
         {
             double divResult;
             int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
@@ -189,17 +224,32 @@ namespace Coding_Challenge_1
             // Valida se a lista tem 2 ou mais números para poder fazer a divisão
             if (resultQueue.Count < 2)
             {
-                throw new Exception("Operação MUL requer dois ou mais números na fila");
+                string error = "Operação DIV requer dois ou mais números na fila";
+                logList.Add(new Log("DIV", LogType.Warning, error, _accumulator));
+                return null;
+            }
+
+            // Valida se está a fazer um divisão por 0
+            if (resultQueue[resultLastIndex-1] == 0)
+            {
+                string error = "Operação DIV não pode dividir por 0";
+                logList.Add(new Log("DIV", LogType.Warning, error, _accumulator));
+                return null;
             }
 
             // Divide os ultimos valores da lista
             divResult = resultQueue[resultLastIndex] / resultQueue[resultLastIndex - 1];
+
+            // Guarda a descrição do processo da operação para efeitos de log
+            string logOp = $"{resultQueue[resultLastIndex]} / {resultQueue[resultLastIndex - 1]} = {divResult}";
 
             // Remove os valores usados na divisão
             resultQueue.RemoveRange(resultLastIndex - 1, 2);
 
             // Adiciona o valor da divisão ao final da lista
             resultQueue.Add(divResult);
+
+            logList.Add(new Log("DIV", LogType.Regular, null, logOp, String.Join(' ', resultQueue), divResult));
 
             // Guarda o valor da divisão no acumulador
             return divResult;
@@ -208,40 +258,51 @@ namespace Coding_Challenge_1
         /// <summary>
         /// Operação DUP - duplica o ultimo valor da lista
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Duplicate(List<double> resultQueue)
+        private static double? Duplicate()
         {
             // Valida se a lista tem 1 ou mais números
             if (resultQueue.Count < 1)
             {
-                throw new Exception("Operação DUP requer pelo menos um número na fila");
+                string error = "Operação DUP requer pelo menos um número na fila";
+                logList.Add(new Log("DUP", LogType.Warning, error, _accumulator));
+                return null;
             }
 
-            // Adiciona ao final da lista o último valor da lista
-            resultQueue.Add(resultQueue.Last());
+            // Guarda o ultimo valor da lista
+            double valueToDup = resultQueue.Last();
+
+            // Adiciona o valor a duplicar ao final da lista
+            resultQueue.Add(valueToDup);
+
+            logList.Add(new Log("DUP", LogType.Regular, null, null, String.Join(' ', resultQueue), valueToDup));
+
+            return valueToDup;
         }
 
         /// <summary>
         /// Operação POP - remove o ultimo valor da lista
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Pop(List<double> resultQueue)
+        private static void Pop()
         {
             // Valida se a lista tem 1 ou mais números
             if (resultQueue.Count < 1)
             {
-                throw new Exception("Operação POP requer pelo menos um número na fila");
+                string error = "Operação POP requer pelo menos um número na fila";
+                logList.Add(new Log("POP", LogType.Warning, error, _accumulator));
+                return;
             }
 
             // Remove o último valor da lista
             resultQueue.RemoveAt(resultQueue.Count - 1);
+
+            logList.Add(new Log("POP", LogType.Regular, null, null, String.Join(' ', resultQueue), _accumulator));
+            return;
         }
 
         /// <summary>
         /// Operação SWAP - inverte a posição dos dois últimos valores da lista
         /// </summary>
-        /// <param name="resultQueue"> Lista de resultados </param>
-        private static void Swap(List<double> resultQueue)
+        private static void Swap()
         {
             double aux = 0;
             int resultLastIndex = resultQueue.Count - 1; // Guarda o último index da lista (para só se aceder á contagem da lista uma vez)
@@ -249,15 +310,23 @@ namespace Coding_Challenge_1
             // Valida se a lista tem 2 ou mais números para poder realizar a inversão
             if (resultQueue.Count < 2)
             {
-                throw new Exception("Operação SWAP requer dois ou mais números na fila");
+                string error = "Operação SWAP requer dois ou mais números na fila";
+                logList.Add(new Log("SWAP", LogType.Warning, error, _accumulator));
+                return;
             }
 
             // Guarda o último valor da lista numa variável auxiliar
             aux = resultQueue.Last();
 
+            // Guarda a descrição do processo da operação para efeitos de log
+            string logOp = $"{resultQueue[resultLastIndex]} <-> {resultQueue[resultLastIndex - 1]}";
+
             // Insere o penúltimo valor no último lugar e depois insere o valor auxiliar no penúltimo lugar
             resultQueue[resultLastIndex] = resultQueue[resultLastIndex - 1];
             resultQueue[resultLastIndex - 1] = aux;
+
+            logList.Add(new Log("SWAP", LogType.Regular, null, logOp, String.Join(' ', resultQueue), _accumulator));
+            return;
         }
     }
 
